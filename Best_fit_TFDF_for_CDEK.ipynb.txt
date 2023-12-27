@@ -1,0 +1,668 @@
+{
+  "cells": [
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "KsjSdiEo8ryA",
+        "outputId": "0eda3529-50a0-4576-8ee3-64ee0a256580"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: tensorflow in /usr/local/lib/python3.10/dist-packages (2.15.0.post1)\n",
+            "Requirement already satisfied: tensorflow_decision_forests in /usr/local/lib/python3.10/dist-packages (1.8.1)\n",
+            "Requirement already satisfied: absl-py>=1.0.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.4.0)\n",
+            "Requirement already satisfied: astunparse>=1.6.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.6.3)\n",
+            "Requirement already satisfied: flatbuffers>=23.5.26 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (23.5.26)\n",
+            "Requirement already satisfied: gast!=0.5.0,!=0.5.1,!=0.5.2,>=0.2.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (0.5.4)\n",
+            "Requirement already satisfied: google-pasta>=0.1.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (0.2.0)\n",
+            "Requirement already satisfied: h5py>=2.9.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (3.9.0)\n",
+            "Requirement already satisfied: libclang>=13.0.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (16.0.6)\n",
+            "Requirement already satisfied: ml-dtypes~=0.2.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (0.2.0)\n",
+            "Requirement already satisfied: numpy<2.0.0,>=1.23.5 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.23.5)\n",
+            "Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (3.3.0)\n",
+            "Requirement already satisfied: packaging in /usr/local/lib/python3.10/dist-packages (from tensorflow) (23.2)\n",
+            "Requirement already satisfied: protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (3.20.3)\n",
+            "Requirement already satisfied: setuptools in /usr/local/lib/python3.10/dist-packages (from tensorflow) (67.7.2)\n",
+            "Requirement already satisfied: six>=1.12.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.16.0)\n",
+            "Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (2.3.0)\n",
+            "Requirement already satisfied: typing-extensions>=3.6.6 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (4.5.0)\n",
+            "Requirement already satisfied: wrapt<1.15,>=1.11.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.14.1)\n",
+            "Requirement already satisfied: tensorflow-io-gcs-filesystem>=0.23.1 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (0.34.0)\n",
+            "Requirement already satisfied: grpcio<2.0,>=1.24.3 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (1.59.3)\n",
+            "Requirement already satisfied: tensorboard<2.16,>=2.15 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (2.15.1)\n",
+            "Requirement already satisfied: tensorflow-estimator<2.16,>=2.15.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (2.15.0)\n",
+            "Requirement already satisfied: keras<2.16,>=2.15.0 in /usr/local/lib/python3.10/dist-packages (from tensorflow) (2.15.0)\n",
+            "Requirement already satisfied: pandas in /usr/local/lib/python3.10/dist-packages (from tensorflow_decision_forests) (1.5.3)\n",
+            "Requirement already satisfied: wheel in /usr/local/lib/python3.10/dist-packages (from tensorflow_decision_forests) (0.42.0)\n",
+            "Requirement already satisfied: wurlitzer in /usr/local/lib/python3.10/dist-packages (from tensorflow_decision_forests) (3.0.3)\n",
+            "Requirement already satisfied: google-auth<3,>=1.6.3 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (2.17.3)\n",
+            "Requirement already satisfied: google-auth-oauthlib<2,>=0.5 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (1.0.0)\n",
+            "Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (3.5.1)\n",
+            "Requirement already satisfied: requests<3,>=2.21.0 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (2.31.0)\n",
+            "Requirement already satisfied: tensorboard-data-server<0.8.0,>=0.7.0 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (0.7.2)\n",
+            "Requirement already satisfied: werkzeug>=1.0.1 in /usr/local/lib/python3.10/dist-packages (from tensorboard<2.16,>=2.15->tensorflow) (3.0.1)\n",
+            "Requirement already satisfied: python-dateutil>=2.8.1 in /usr/local/lib/python3.10/dist-packages (from pandas->tensorflow_decision_forests) (2.8.2)\n",
+            "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.10/dist-packages (from pandas->tensorflow_decision_forests) (2023.3.post1)\n",
+            "Requirement already satisfied: cachetools<6.0,>=2.0.0 in /usr/local/lib/python3.10/dist-packages (from google-auth<3,>=1.6.3->tensorboard<2.16,>=2.15->tensorflow) (5.3.2)\n",
+            "Requirement already satisfied: pyasn1-modules>=0.2.1 in /usr/local/lib/python3.10/dist-packages (from google-auth<3,>=1.6.3->tensorboard<2.16,>=2.15->tensorflow) (0.3.0)\n",
+            "Requirement already satisfied: rsa<5,>=3.1.4 in /usr/local/lib/python3.10/dist-packages (from google-auth<3,>=1.6.3->tensorboard<2.16,>=2.15->tensorflow) (4.9)\n",
+            "Requirement already satisfied: requests-oauthlib>=0.7.0 in /usr/local/lib/python3.10/dist-packages (from google-auth-oauthlib<2,>=0.5->tensorboard<2.16,>=2.15->tensorflow) (1.3.1)\n",
+            "Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.10/dist-packages (from requests<3,>=2.21.0->tensorboard<2.16,>=2.15->tensorflow) (3.3.2)\n",
+            "Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/dist-packages (from requests<3,>=2.21.0->tensorboard<2.16,>=2.15->tensorflow) (3.6)\n",
+            "Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.10/dist-packages (from requests<3,>=2.21.0->tensorboard<2.16,>=2.15->tensorflow) (2.0.7)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.10/dist-packages (from requests<3,>=2.21.0->tensorboard<2.16,>=2.15->tensorflow) (2023.11.17)\n",
+            "Requirement already satisfied: MarkupSafe>=2.1.1 in /usr/local/lib/python3.10/dist-packages (from werkzeug>=1.0.1->tensorboard<2.16,>=2.15->tensorflow) (2.1.3)\n",
+            "Requirement already satisfied: pyasn1<0.6.0,>=0.4.6 in /usr/local/lib/python3.10/dist-packages (from pyasn1-modules>=0.2.1->google-auth<3,>=1.6.3->tensorboard<2.16,>=2.15->tensorflow) (0.5.1)\n",
+            "Requirement already satisfied: oauthlib>=3.0.0 in /usr/local/lib/python3.10/dist-packages (from requests-oauthlib>=0.7.0->google-auth-oauthlib<2,>=0.5->tensorboard<2.16,>=2.15->tensorflow) (3.2.2)\n"
+          ]
+        }
+      ],
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import os\n",
+        "!pip install tensorflow tensorflow_decision_forests\n",
+        "import tensorflow_decision_forests as tfdf\n",
+        "import tensorflow_datasets as tfds\n",
+        "from sklearn.model_selection import train_test_split"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "eyOMhO2yla-2",
+        "outputId": "0f329683-4f59-443a-f302-ff0570d898b7"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "      Тип тары  Длина, см  Высота, см  Ширина, см Факт. вес, кг Направление\n",
+            "0       Паллет         33          30          23           6,5  Магистраль\n",
+            "1       Паллет         40          15          40           6,4  Магистраль\n",
+            "2       Паллет         30          35          30             7        АВИА\n",
+            "3       Паллет         64           8           8           1,4        АВИА\n",
+            "4       Паллет         32          20          31         3,456         ОБЛ\n",
+            "...        ...        ...         ...         ...           ...         ...\n",
+            "14993   Телега         33          15          26          0,45         ПВЗ\n",
+            "14994   Телега         41          11          26           2,6         ОБЛ\n",
+            "14995   Телега         24          47          38          5,68         ОБЛ\n",
+            "14996   Паллет         29          14          22             1         ОБЛ\n",
+            "14997   Телега         41          77          49            18         ПВЗ\n",
+            "\n",
+            "[14998 rows x 6 columns] 10\n",
+            "Index(['Cage_type', 'length', 'tall', 'width', 'Weight', 'Destination'], dtype='object')\n"
+          ]
+        }
+      ],
+      "source": [
+        "import pandas as pd\n",
+        "path_to_file = ('Консолидации СПБ СЦ Софийская TFDF.xlsx - document_document_consolidation (1).csv')\n",
+        "consoles = pd.read_csv(path_to_file)\n",
+        "print(consoles, 10)\n",
+        "consoles.columns = [\n",
+        "    'Cage_type',\n",
+        "    'length',\n",
+        "    'tall',\n",
+        "    'width',\n",
+        "    'Weight',\n",
+        "    'Destination'\n",
+        "]\n",
+        "\n",
+        "consoles.head\n",
+        "print(consoles.columns)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "HERXwGCBn_Ny"
+      },
+      "outputs": [],
+      "source": [
+        "def split_dataset(dataset, test_ratio=0.30, seed=1234):\n",
+        "  \"\"\"\n",
+        "  Splits a panda dataframe in two, usually for train/test sets.\n",
+        "  Using the same random seed ensures we get the same split so\n",
+        "  that the description in this tutorial line up with generated images.\n",
+        "  \"\"\"\n",
+        "  np.random.seed(seed)\n",
+        "  test_indices = np.random.rand(len(dataset)) < test_ratio\n",
+        "  return dataset[~test_indices], dataset[test_indices]"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "z3LP8pgjpxM6",
+        "outputId": "97fca3cf-918e-4898-a733-13eabe021296"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Target 'Cage_type'' classes: ['Паллет', 'Телега', 'Короб Монолит', 'Короб Обл', 'Короб ПВЗ', 'Мешок']\n",
+            "Cage_type\n"
+          ]
+        }
+      ],
+      "source": [
+        "Cage_label = \"Cage_type\"   # Name of the classification target label\n",
+        "classes = list(consoles[Cage_label].unique())\n",
+        "consoles[Cage_label] = consoles[Cage_label].map(classes.index)\n",
+        "\n",
+        "print(f\"Target '{Cage_label}'' classes: {classes}\")\n",
+        "consoles.head(3)\n",
+        "\n",
+        "print(Cage_label)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "0u4eD7_hKhY0"
+      },
+      "source": [
+        "# Новый раздел"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "7xPhzsOckoqZ",
+        "outputId": "d8f9c4cb-275c-4624-c3e7-aa7d3452134b"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "10486 examples in training, 4512 examples for testing.\n"
+          ]
+        }
+      ],
+      "source": [
+        "train_ds_pd, test_ds_pd = split_dataset(consoles)\n",
+        "print(f\"{len(train_ds_pd)} examples in training, {len(test_ds_pd)} examples for testing.\")\n",
+        "\n",
+        "# Convert to tensorflow data sets\n",
+        "train_ds = tfdf.keras.pd_dataframe_to_tf_dataset(train_ds_pd, label=Cage_label)\n",
+        "test_ds = tfdf.keras.pd_dataframe_to_tf_dataset(test_ds_pd, label=Cage_label)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "9KmM7H2s1bJL",
+        "outputId": "959a611f-bccd-4cde-f17d-1d171a2f42c1"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<keras.src.callbacks.History at 0x78e53528c2e0>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 9
+        }
+      ],
+      "source": [
+        "cmodel = tfdf.keras.RandomForestModel(verbose=0, random_seed=1234)\n",
+        "cmodel.fit(train_ds)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "UF46lrQM-8sg",
+        "outputId": "7a895069-9630-4c07-abc4-0dc5ea91f072"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Accuracy: 0.8520884989509823 Loss:0.8331160896039231\n"
+          ]
+        }
+      ],
+      "source": [
+        "self_evaluation = cmodel.make_inspector().evaluation()\n",
+        "print(f\"Accuracy: {self_evaluation.accuracy} Loss:{self_evaluation.loss}\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "71wCXYfiGuAk",
+        "outputId": "093287af-112c-4e53-c0dc-89bb007c2012"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "['length', 'tall', 'width', 'Weight', 'Destination']\n"
+          ]
+        }
+      ],
+      "source": [
+        "input_features = list(consoles.columns)\n",
+        "input_features.remove(\"Cage_type\")\n",
+        "\n",
+        "print(input_features)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "t-OzQ_15T9b5",
+        "outputId": "95ce61b7-663c-4dcd-a951-3b05ba49bd55"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<keras.src.callbacks.History at 0x78e534899180>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 12
+        }
+      ],
+      "source": [
+        "model = tfdf.keras.GradientBoostedTreesModel(\n",
+        "    verbose=0, # Very few logs\n",
+        "    features=[tfdf.keras.FeatureUsage(name=n) for n in input_features],\n",
+        "    exclude_non_specified_features=True,\n",
+        "    min_examples=1,\n",
+        "    categorical_algorithm=\"RANDOM\",\n",
+        "    #max_depth=4,\n",
+        "    shrinkage=0.05,\n",
+        "    #num_candidate_attributes_ratio=0.2,\n",
+        "    split_axis=\"SPARSE_OBLIQUE\",\n",
+        "    sparse_oblique_normalization=\"MIN_MAX\",\n",
+        "    sparse_oblique_num_projections_exponent=2.0,\n",
+        "    num_trees=2000,\n",
+        "    #validation_ratio=0.0,\n",
+        "    random_seed=1234,\n",
+        "\n",
+        ")\n",
+        "model.fit(train_ds)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5E4Jss1Bd1zt",
+        "outputId": "c9f25bef-d1a8-48c4-f842-d74ce9940d3c"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Accuracy: 0.8541666865348816 Loss:0.3780648112297058\n"
+          ]
+        }
+      ],
+      "source": [
+        "self_evaluation = model.make_inspector().evaluation()\n",
+        "print(f\"Accuracy: {self_evaluation.accuracy} Loss:{self_evaluation.loss}\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "pVOg4qMDeEhF",
+        "outputId": "355347ca-172b-4cc1-b7c4-0bed7bfe9970"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Model: \"gradient_boosted_trees_model\"\n",
+            "_________________________________________________________________\n",
+            " Layer (type)                Output Shape              Param #   \n",
+            "=================================================================\n",
+            "=================================================================\n",
+            "Total params: 1 (1.00 Byte)\n",
+            "Trainable params: 0 (0.00 Byte)\n",
+            "Non-trainable params: 1 (1.00 Byte)\n",
+            "_________________________________________________________________\n",
+            "Type: \"GRADIENT_BOOSTED_TREES\"\n",
+            "Task: CLASSIFICATION\n",
+            "Label: \"__LABEL\"\n",
+            "\n",
+            "Input Features (5):\n",
+            "\tDestination\n",
+            "\tWeight\n",
+            "\tlength\n",
+            "\ttall\n",
+            "\twidth\n",
+            "\n",
+            "No weights\n",
+            "\n",
+            "Variable Importance: INV_MEAN_MIN_DEPTH:\n",
+            "    1. \"Destination\"  0.651331 ################\n",
+            "    2.      \"length\"  0.372843 ######\n",
+            "    3.        \"tall\"  0.227463 #\n",
+            "    4.      \"Weight\"  0.226663 #\n",
+            "    5.       \"width\"  0.170651 \n",
+            "\n",
+            "Variable Importance: NUM_AS_ROOT:\n",
+            "    1. \"Destination\" 407.000000 ################\n",
+            "    2.      \"length\" 47.000000 #\n",
+            "    3.      \"Weight\" 17.000000 \n",
+            "    4.        \"tall\" 15.000000 \n",
+            "\n",
+            "Variable Importance: NUM_NODES:\n",
+            "    1.      \"length\" 6891.000000 ################\n",
+            "    2.      \"Weight\" 3375.000000 #######\n",
+            "    3.        \"tall\" 2436.000000 #####\n",
+            "    4. \"Destination\" 1503.000000 ###\n",
+            "    5.       \"width\" 254.000000 \n",
+            "\n",
+            "Variable Importance: SUM_SCORE:\n",
+            "    1. \"Destination\" 17213.580968 ################\n",
+            "    2.      \"length\" 10791.271009 #########\n",
+            "    3.        \"tall\" 8357.625781 #######\n",
+            "    4.      \"Weight\" 2108.341576 #\n",
+            "    5.       \"width\" 168.756218 \n",
+            "\n",
+            "\n",
+            "\n",
+            "Loss: MULTINOMIAL_LOG_LIKELIHOOD\n",
+            "Validation loss value: 0.378065\n",
+            "Number of trees per iteration: 6\n",
+            "Node format: NOT_SET\n",
+            "Number of trees: 486\n",
+            "Total number of nodes: 29404\n",
+            "\n",
+            "Number of nodes by tree:\n",
+            "Count: 486 Average: 60.5021 StdDev: 5.55176\n",
+            "Min: 29 Max: 63 Ignored: 0\n",
+            "----------------------------------------------\n",
+            "[ 29, 30)   4   0.82%   0.82%\n",
+            "[ 30, 32)   1   0.21%   1.03%\n",
+            "[ 32, 34)   5   1.03%   2.06%\n",
+            "[ 34, 36)   0   0.00%   2.06%\n",
+            "[ 36, 37)   0   0.00%   2.06%\n",
+            "[ 37, 39)   1   0.21%   2.26%\n",
+            "[ 39, 41)   0   0.00%   2.26%\n",
+            "[ 41, 43)   3   0.62%   2.88%\n",
+            "[ 43, 44)   1   0.21%   3.09%\n",
+            "[ 44, 46)   2   0.41%   3.50%\n",
+            "[ 46, 48)   3   0.62%   4.12%\n",
+            "[ 48, 50)   2   0.41%   4.53%\n",
+            "[ 50, 51)   0   0.00%   4.53%\n",
+            "[ 51, 53)   2   0.41%   4.94%\n",
+            "[ 53, 55)   3   0.62%   5.56%\n",
+            "[ 55, 57)  18   3.70%   9.26% #\n",
+            "[ 57, 58)  23   4.73%  13.99% #\n",
+            "[ 58, 60)  36   7.41%  21.40% #\n",
+            "[ 60, 62)  96  19.75%  41.15% ###\n",
+            "[ 62, 63] 286  58.85% 100.00% ##########\n",
+            "\n",
+            "Depth by leafs:\n",
+            "Count: 14945 Average: 4.97123 StdDev: 0.211991\n",
+            "Min: 1 Max: 5 Ignored: 0\n",
+            "----------------------------------------------\n",
+            "[ 1, 2)     9   0.06%   0.06%\n",
+            "[ 2, 3)     5   0.03%   0.09%\n",
+            "[ 3, 4)    58   0.39%   0.48%\n",
+            "[ 4, 5)   263   1.76%   2.24%\n",
+            "[ 5, 5] 14610  97.76% 100.00% ##########\n",
+            "\n",
+            "Number of training obs by leaf:\n",
+            "Count: 14945 Average: 305.095 StdDev: 569.411\n",
+            "Min: 1 Max: 9217 Ignored: 0\n",
+            "----------------------------------------------\n",
+            "[    1,  461) 11820  79.09%  79.09% ##########\n",
+            "[  461,  922)  1723  11.53%  90.62% #\n",
+            "[  922, 1383)   751   5.03%  95.64% #\n",
+            "[ 1383, 1844)   305   2.04%  97.68%\n",
+            "[ 1844, 2305)   132   0.88%  98.57%\n",
+            "[ 2305, 2766)    85   0.57%  99.14%\n",
+            "[ 2766, 3226)    63   0.42%  99.56%\n",
+            "[ 3226, 3687)    21   0.14%  99.70%\n",
+            "[ 3687, 4148)     8   0.05%  99.75%\n",
+            "[ 4148, 4609)     9   0.06%  99.81%\n",
+            "[ 4609, 5070)     2   0.01%  99.83%\n",
+            "[ 5070, 5531)     5   0.03%  99.86%\n",
+            "[ 5531, 5992)     3   0.02%  99.88%\n",
+            "[ 5992, 6452)     4   0.03%  99.91%\n",
+            "[ 6452, 6913)     1   0.01%  99.91%\n",
+            "[ 6913, 7374)     4   0.03%  99.94%\n",
+            "[ 7374, 7835)     3   0.02%  99.96%\n",
+            "[ 7835, 8296)     2   0.01%  99.97%\n",
+            "[ 8296, 8757)     0   0.00%  99.97%\n",
+            "[ 8757, 9217]     4   0.03% 100.00%\n",
+            "\n",
+            "Attribute in nodes:\n",
+            "\t6891 : length [NUMERICAL]\n",
+            "\t3375 : Weight [CATEGORICAL]\n",
+            "\t2436 : tall [NUMERICAL]\n",
+            "\t1503 : Destination [CATEGORICAL]\n",
+            "\t254 : width [NUMERICAL]\n",
+            "\n",
+            "Attribute in nodes with depth <= 0:\n",
+            "\t407 : Destination [CATEGORICAL]\n",
+            "\t47 : length [NUMERICAL]\n",
+            "\t17 : Weight [CATEGORICAL]\n",
+            "\t15 : tall [NUMERICAL]\n",
+            "\n",
+            "Attribute in nodes with depth <= 1:\n",
+            "\t584 : Destination [CATEGORICAL]\n",
+            "\t523 : length [NUMERICAL]\n",
+            "\t185 : tall [NUMERICAL]\n",
+            "\t152 : Weight [CATEGORICAL]\n",
+            "\t5 : width [NUMERICAL]\n",
+            "\n",
+            "Attribute in nodes with depth <= 2:\n",
+            "\t1504 : length [NUMERICAL]\n",
+            "\t807 : Destination [CATEGORICAL]\n",
+            "\t526 : Weight [CATEGORICAL]\n",
+            "\t501 : tall [NUMERICAL]\n",
+            "\t32 : width [NUMERICAL]\n",
+            "\n",
+            "Attribute in nodes with depth <= 3:\n",
+            "\t3317 : length [NUMERICAL]\n",
+            "\t1377 : Weight [CATEGORICAL]\n",
+            "\t1228 : Destination [CATEGORICAL]\n",
+            "\t1137 : tall [NUMERICAL]\n",
+            "\t95 : width [NUMERICAL]\n",
+            "\n",
+            "Attribute in nodes with depth <= 5:\n",
+            "\t6891 : length [NUMERICAL]\n",
+            "\t3375 : Weight [CATEGORICAL]\n",
+            "\t2436 : tall [NUMERICAL]\n",
+            "\t1503 : Destination [CATEGORICAL]\n",
+            "\t254 : width [NUMERICAL]\n",
+            "\n",
+            "Condition type in nodes:\n",
+            "\t9581 : ObliqueCondition\n",
+            "\t4446 : ContainsBitmapCondition\n",
+            "\t432 : ContainsCondition\n",
+            "Condition type in nodes with depth <= 0:\n",
+            "\t424 : ContainsBitmapCondition\n",
+            "\t62 : ObliqueCondition\n",
+            "Condition type in nodes with depth <= 1:\n",
+            "\t736 : ContainsBitmapCondition\n",
+            "\t713 : ObliqueCondition\n",
+            "Condition type in nodes with depth <= 2:\n",
+            "\t2037 : ObliqueCondition\n",
+            "\t1311 : ContainsBitmapCondition\n",
+            "\t22 : ContainsCondition\n",
+            "Condition type in nodes with depth <= 3:\n",
+            "\t4549 : ObliqueCondition\n",
+            "\t2498 : ContainsBitmapCondition\n",
+            "\t107 : ContainsCondition\n",
+            "Condition type in nodes with depth <= 5:\n",
+            "\t9581 : ObliqueCondition\n",
+            "\t4446 : ContainsBitmapCondition\n",
+            "\t432 : ContainsCondition\n",
+            "\n",
+            "Training logs:\n",
+            "Number of iteration to final model: 81\n",
+            "\tIter:1 train-loss:1.572267 valid-loss:1.578800  train-accuracy:0.869004 valid-accuracy:0.837862\n",
+            "\tIter:2 train-loss:1.406713 valid-loss:1.419129  train-accuracy:0.873055 valid-accuracy:0.844203\n",
+            "\tIter:3 train-loss:1.273018 valid-loss:1.290719  train-accuracy:0.875400 valid-accuracy:0.843297\n",
+            "\tIter:4 train-loss:1.161744 valid-loss:1.184944  train-accuracy:0.875400 valid-accuracy:0.839674\n",
+            "\tIter:5 train-loss:1.067301 valid-loss:1.094260  train-accuracy:0.875293 valid-accuracy:0.837862\n",
+            "\tIter:6 train-loss:0.986456 valid-loss:1.016899  train-accuracy:0.878278 valid-accuracy:0.836957\n",
+            "\tIter:16 train-loss:0.552026 valid-loss:0.611761  train-accuracy:0.888084 valid-accuracy:0.839674\n",
+            "\tIter:26 train-loss:0.394303 valid-loss:0.476621  train-accuracy:0.893733 valid-accuracy:0.846920\n",
+            "\tIter:36 train-loss:0.321397 valid-loss:0.424911  train-accuracy:0.899169 valid-accuracy:0.849638\n",
+            "\tIter:46 train-loss:0.281793 valid-loss:0.399833  train-accuracy:0.903539 valid-accuracy:0.855072\n",
+            "\tIter:56 train-loss:0.256454 valid-loss:0.387324  train-accuracy:0.909081 valid-accuracy:0.856884\n",
+            "\tIter:66 train-loss:0.238871 valid-loss:0.380489  train-accuracy:0.914197 valid-accuracy:0.855072\n",
+            "\tIter:76 train-loss:0.225076 valid-loss:0.379194  train-accuracy:0.918354 valid-accuracy:0.855072\n",
+            "\tIter:86 train-loss:0.212821 valid-loss:0.378342  train-accuracy:0.924323 valid-accuracy:0.855072\n",
+            "\n"
+          ]
+        }
+      ],
+      "source": [
+        "model.summary()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Yd-J8BDHfQwQ",
+        "outputId": "084fb93f-3f46-47d3-80c4-76ac439b48de"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Use /tmp/tmp0ji1zpxz as temporary training directory\n",
+            "Accuracy: 0.8795656561851501 Loss:0.31780943274497986\n"
+          ]
+        }
+      ],
+      "source": [
+        "tuner = tfdf.tuner.RandomSearch(num_trials=1000)\n",
+        "tuner.choice(\"min_examples\", [2, 5, 7, 10])\n",
+        "tuner.choice(\"categorical_algorithm\", [\"CART\", \"RANDOM\"])\n",
+        "\n",
+        "local_search_space = tuner.choice(\"growing_strategy\", [\"LOCAL\"])\n",
+        "local_search_space.choice(\"max_depth\", [3, 4, 5, 6, 8])\n",
+        "\n",
+        "global_search_space = tuner.choice(\"growing_strategy\", [\"BEST_FIRST_GLOBAL\"], merge=True)\n",
+        "global_search_space.choice(\"max_num_nodes\", [16, 32, 64, 128, 256])\n",
+        "\n",
+        "#tuner.choice(\"use_hessian_gain\", [True, False])\n",
+        "tuner.choice(\"shrinkage\", [0.02, 0.05, 0.10, 0.15])\n",
+        "tuner.choice(\"num_candidate_attributes_ratio\", [0.2, 0.5, 0.9, 1.0])\n",
+        "\n",
+        "\n",
+        "tuner.choice(\"split_axis\", [\"AXIS_ALIGNED\"])\n",
+        "oblique_space = tuner.choice(\"split_axis\", [\"SPARSE_OBLIQUE\"], merge=True)\n",
+        "oblique_space.choice(\"sparse_oblique_normalization\",\n",
+        "                     [\"NONE\", \"STANDARD_DEVIATION\", \"MIN_MAX\"])\n",
+        "oblique_space.choice(\"sparse_oblique_weights\", [\"BINARY\", \"CONTINUOUS\"])\n",
+        "oblique_space.choice(\"sparse_oblique_num_projections_exponent\", [1.0, 1.5])\n",
+        "tuned_model = tfdf.keras.GradientBoostedTreesModel(tuner=tuner)\n",
+        "tuned_model.fit(train_ds, verbose=0)\n",
+        "\n",
+        "tuned_self_evaluation = tuned_model.make_inspector().evaluation()\n",
+        "print(f\"Accuracy: {tuned_self_evaluation.accuracy} Loss:{tuned_self_evaluation.loss}\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(f\"Accuracy: {tuned_self_evaluation.accuracy} Loss:{tuned_self_evaluation.loss}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "cXZuWHj8k58H",
+        "outputId": "2eb0328f-97c2-4df4-f841-1d1121c56fbf"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Accuracy: 0.8795656561851501 Loss:0.31780943274497986\n"
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "gpuType": "T4"
+    },
+    "kernelspec": {
+      "display_name": "Python 3",
+      "name": "python3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
